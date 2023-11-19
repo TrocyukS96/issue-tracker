@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { createIssueSchema } from '../../validationSchema';
 import ErrorsMessage from '../../components/ErrorsMessage';
+import Spinner from '../../components/Spinner';
 
 type IssueForm = z.infer<typeof createIssueSchema>
 
@@ -20,12 +21,16 @@ const NewIssuePage = () => {
     resolver: zodResolver(createIssueSchema)
   })
   const [error, setError] = useState('')
+  const [isSubmiting, setIsSubmiting] = useState(false)
   const submitData = async (params: IssueForm) => {
     try {
+      setIsSubmiting(true)
       await axios.post('/api/issues', params)
       router.push('/issues')
+      setIsSubmiting(false)
     } catch (error) {
       setError('An unexpected error occured')
+      setIsSubmiting(false)
     }
   }
   return (
@@ -57,8 +62,11 @@ const NewIssuePage = () => {
         {
           errors.description && <ErrorsMessage>{errors.description?.message}</ErrorsMessage>
         }
-        <Button type='submit'>
+        <Button type='submit' disabled={isSubmiting}>
           Submit New Issue
+          {isSubmiting &&
+            <Spinner/>
+          }
         </Button>
       </form>
     </div>
